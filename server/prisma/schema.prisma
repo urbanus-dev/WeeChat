@@ -15,10 +15,33 @@ datasource db {
 
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  Username  String
-  password  String
-  createdAt DateTime @default(now())
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  Username          String
+  password          String
+  languagePreference String?
+  createdAt         DateTime @default(now())
+  messages          Message[] @relation("Sender")
+  chats             Chat[]    @relation("ChatParticipants")
 }
 
+model Chat {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]   @relation("ChatParticipants")
+  messages  Message[]
+}
+
+model Message {
+  id                Int      @id @default(autoincrement())
+  originalText     String
+  translatedText    String?
+  senderId         Int
+  chatId           Int
+  languageDetected  String
+  timestamp        DateTime @default(now())
+
+  sender           User     @relation("Sender", fields: [senderId], references: [id])
+  chat             Chat     @relation(fields: [chatId], references: [id])
+}
