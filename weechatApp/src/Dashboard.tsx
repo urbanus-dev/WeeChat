@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-//i need to get all the users from the database
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
 
-    const [users, setUsers] = useState<{ id: number, email: string, Username: string, password: string, languagePreference: string }[]>([]);
+    const [users, setUsers] = useState<{Username: string }[]>([]);
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -23,29 +21,14 @@ const Dashboard: React.FC = () => {
 
     return (
         <div>
-            <h1>Users</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Email</th>
-                        <th>Username</th>
-                        <th>Password</th>
-                        <th>Language Preference</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map(user => (
-                        <tr key={user.id}>
-                            <td>{user.id}</td>
-                            <td>{user.email}</td>
-                            <td>{user.Username}</td>
-                            <td>{user.password}</td>
-                            <td>{user.languagePreference}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <h1 className='text'>Dashboard</h1>
+            <button onClick={() => navigate('/register')}>Register</button>
+            <button onClick={() => navigate('/login')}>Login</button>
+            <ul>
+                {users.map((user) => (
+                    <li key={user.Username}>{user.Username}</li>
+                ))}
+            </ul>
         </div>
     );
 }
