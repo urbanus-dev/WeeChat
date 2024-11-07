@@ -6,7 +6,7 @@ import './App.css'
 import Register from './register';
 import Login from './login';
 import HomePage from './homePage';
-import Dashboard from './Dashboard';
+import Dashboard from './dashboard';
 const App:React.FC=()=> {
   return (
   <Router>

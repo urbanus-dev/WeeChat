@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { getSupportedLanguages } from "./getLanguages";
 
 function generateToken(id: any) {
-    const secretKey = process.env.JWT_SECRET || 'your_secret_key';
+    const secretKey = process.env.JWT_SECRET || '';
     return jwt.sign({ id }, secretKey, { expiresIn: '7d' });
 }
 
@@ -56,9 +56,15 @@ export const registerUser = async (req: Request<{}, {}, UseRecords>, res: Respon
         const existingUser = await prisma.user.findUnique({
             where: { email }
         });
-
+  
         if (existingUser) {
             return sendResponse(res, 400, { error: 'Email already exists' });
+        }
+        const existingUsername = await prisma.user.findUnique({
+            where: { Username }
+        });
+        if (existingUsername) {
+            return sendResponse(res, 400, { error: 'Username already exists' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -100,7 +106,7 @@ export const loginUser = async (req: Request<{}, {}, UseRecords>, res: Response)
             return sendResponse(res, 400, { error: 'Invalid email or password' });
         }
         const token = generateToken(user.id);
-        sendResponse(res, 200, { token, message: `Welcome ${user.Username}` });
+        res.status(200).json({ token, message: `Welcome ${user.Username}`, Username: user.Username });
     } catch (error) {
         console.error('Error logging in user:', error);
         sendResponse(res, 400, { error: 'An error occurred while logging in the user' });
