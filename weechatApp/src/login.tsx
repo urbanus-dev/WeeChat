@@ -22,6 +22,8 @@ const Login: React.FC = () => {
             const data = await response.json();
             if (response.ok) {
                 alert('Login successful');
+
+
                 navigate('/dashboard');
             } else {
                 setError(data.error || 'Login failed. Please try again');

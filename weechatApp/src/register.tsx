@@ -57,10 +57,8 @@ const Register: React.FC = () => {
             console.error(error);
         }
     };
-    console.log(formData)
-
     return (
-        <div className='max-h-max flex justify-center items-center min-h-screen rounded-lg w-full'>
+        <div className='max-h-max flex justify-center items-center min-h-screen rounded-lg w-full tablet:flex-row'>
             <div className='bg-white p-8 rounded-2xl shadow-md w-full max-w-md'>
                 <h1 className='text-2xl font-bold mb-6 text-center text-green-500'>Register</h1>
                 <form className='space-y-4' onSubmit={handleSubmit}>
