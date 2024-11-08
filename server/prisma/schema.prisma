@@ -12,17 +12,30 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-
 model User {
-  id                Int      @id @default(autoincrement())
-  email             String   @unique
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
   Username          String
   password          String
   languagePreference String?
-  createdAt         DateTime @default(now())
-  messages          Message[] @relation("Sender")
+  createdAt         DateTime  @default(now())
+  sentMessages      Message[] @relation("SentMessages")
+  receivedMessages  Message[] @relation("ReceivedMessages")
   chats             Chat[]    @relation("ChatParticipants")
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  chatId     Int?
+
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  chat       Chat?    @relation(fields: [chatId], references: [id])
 }
 
 model Chat {
@@ -31,17 +44,4 @@ model Chat {
   updatedAt DateTime @updatedAt
   users     User[]   @relation("ChatParticipants")
   messages  Message[]
-}
-
-model Message {
-  id                Int      @id @default(autoincrement())
-  originalText     String
-  translatedText    String?
-  senderId         Int
-  chatId           Int
-  languageDetected  String
-  timestamp        DateTime @default(now())
-
-  sender           User     @relation("Sender", fields: [senderId], references: [id])
-  chat             Chat     @relation(fields: [chatId], references: [id])
 }
