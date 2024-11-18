@@ -1,61 +1,84 @@
 import { Request, Response } from 'express';
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
+import { translateMessage } from './messageTranslation';
+
 const prisma = new PrismaClient();
 
-export const createMessage = async (req: Request, res: Response): Promise<void> => {
-    const { senderId, receiverId, content } = req.body;
-
-    try {
-        const sender = await prisma.user.findUnique({ where: { id: senderId } });
-        if (!sender) {
-            res.status(404).json({ error: 'Sender not found' });
-            return;
-        }
-
-        const receiver = await prisma.user.findUnique({ where: { id: receiverId } });
-        if (!receiver) {
-            res.status(404).json({ error: 'Receiver not found' });
-            return;
-        }
-        const message = await prisma.message.create({
-            data: {
-                content,
-                sender: { connect: { id: senderId } },
-                receiver: { connect: { id: receiverId } }
-            }
-        });
-
-        res.status(201).json(message);
-    } catch (error) {
-        console.error('Error creating message:', error);
-        res.status(500).json({ error: 'An error occurred while creating the message' });
-    }
-};
-
 export const getMessages = async (req: Request, res: Response): Promise<void> => {
-    const { senderId, receiverId } = req.query;
+    const { user1, user2 } = req.query;
 
     try {
-        const sender = await prisma.user.findUnique({ where: { id: Number(senderId) } });
-        const receiver = await prisma.user.findUnique({ where: { id: Number(receiverId) } });
-
-        if (!sender || !receiver) {
-            res.status(404).json({ error: 'Sender or Receiver not found' });
-            return;
-        }
         const messages = await prisma.message.findMany({
             where: {
                 OR: [
-                    { senderId: Number(senderId), receiverId: Number(receiverId) },
-                    { senderId: Number(receiverId), receiverId: Number(senderId) }
+                    { senderId: Number(user1), receiverId: Number(user2) },
+                    { senderId: Number(user2), receiverId: Number(user1) }
                 ]
             },
             orderBy: { createdAt: 'asc' }
         });
 
-        res.status(200).json(messages);
+        const user = await prisma.user.findUnique({
+            where: { id: Number(user1) },
+            select: { languagePreference: true }
+        });
+
+        const translatedMessages = await Promise.all(
+            messages.map(async (message) => {
+                if (message.senderId !== Number(user1)) {
+                    message.content = await translateMessage(message.content, user?.languagePreference || 'en');
+                }
+                return message;
+            })
+        );
+
+        res.status(200).json(translatedMessages);
     } catch (error) {
-        console.error('Error retrieving messages:', error);
-        res.status(500).json({ error: 'An error occurred while retrieving messages' });
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'An error occurred while fetching messages' });
+    }
+};
+
+export const createMessage = async (req: Request, res: Response): Promise<void> => {
+    const { senderId, receiverId, content } = req.body;
+
+    if (!senderId || !receiverId || !content) {
+        res.status(400).json({ error: 'Missing required fields' });
+        return;
+    }
+
+    try {
+        let chat = await prisma.chat.findUnique({
+            where: {
+                id: receiverId 
+            }
+        });
+
+        if (!chat) {
+            chat = await prisma.chat.create({
+                data: {
+                    id: receiverId, 
+                    users: {
+                        connect: [{ id: senderId }, { id: receiverId }]
+                    }
+                }
+            });
+        }
+
+        const chatId = chat.id;
+        const message = await prisma.message.create({
+            data: {
+                content,
+                sender: { connect: { id: senderId } },
+                receiver: { connect: { id: receiverId } },
+                chat: { connect: { id: chatId } } 
+            }
+        });
+
+        // Return the newly created message
+        res.status(201).json(message);
+    } catch (error) {
+        console.error('Error creating message:', error);
+        res.status(500).json({ error: 'An error occurred while creating the message' });
     }
 };

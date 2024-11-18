@@ -1,13 +1,13 @@
-import { Router } from "express";
-import { getUser, getUserById, updateUser , deleteUser, registerUser, loginUser} from "../controllers/UserControllers";
-// import { getLanguages } from "../controllers/getLanguages";
+import { Router } from 'express';
+import { registerUser, loginUser, getUser, getUserById, updateUser, deleteUser } from '../controllers/UserControllers';
+
 const router = Router();
-router.get('/', getUser);
-router.get('/:id', getUserById);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-// router.get('/languages', getLanguages);
+router.get('/', getUser);
+// router.get('/:id', getUserById);
+router.put('/:id', updateUser);
+router.delete('/:id', deleteUser);
 
 export default router;
