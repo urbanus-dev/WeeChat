@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,9 +23,8 @@ const Login: React.FC = () => {
             const data = await response.json();
             if (response.ok) {
                 alert('Login successful');
-
-
-                navigate('/dashboard');
+                localStorage.setItem('user', JSON.stringify(data)); 
+                setIsAuthenticated(true); 
             } else {
                 setError(data.error || 'Login failed. Please try again');
             }
@@ -33,6 +33,12 @@ const Login: React.FC = () => {
             setError('An error occurred while trying to log in. Please try again.');
         }
     };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/dashboard');
+        }
+    }, [isAuthenticated, navigate]); 
 
     return (
         <div className="max-h-max flex justify-center items-center min-h-screen rounded-lg">
@@ -61,7 +67,7 @@ const Login: React.FC = () => {
                     </div>
                     <div>
                         <span>Don't have an account? </span>
-                        <a href="#register" className='text-green-500' onClick={()=>navigate('/register')}>Register</a>
+                        <a href="#register" className='text-green-500' onClick={() => navigate('/register')}>Register</a>
                     </div>
                     <div>
                         <input type="checkbox" className="mr-2" />

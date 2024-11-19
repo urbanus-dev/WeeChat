@@ -31,7 +31,7 @@ const validateRegisterBody = (body: UseRecords) => {
     if (password !== confirmPassword) {
         return 'Passwords do not match';
     }
-   
+
 
     return null;
 }
@@ -56,7 +56,7 @@ export const registerUser = async (req: Request<{}, {}, UseRecords>, res: Respon
         const existingUser = await prisma.user.findUnique({
             where: { email }
         });
-  
+
         if (existingUser) {
             return sendResponse(res, 400, { error: 'Email already exists' });
         }
@@ -66,7 +66,9 @@ export const registerUser = async (req: Request<{}, {}, UseRecords>, res: Respon
         if (existingUsername) {
             return sendResponse(res, 400, { error: 'Username already exists' });
         }
-
+        if (password.length < 8) {
+            return sendResponse(res, 400, { error: 'Password should be atleast 8 characters' });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
@@ -106,12 +108,18 @@ export const loginUser = async (req: Request<{}, {}, UseRecords>, res: Response)
             return sendResponse(res, 400, { error: 'Invalid email or password' });
         }
         const token = generateToken(user.id);
-        res.status(200).json({ token, message: `Welcome ${user.Username}`, Username: user.Username });
+        res.status(200).json({
+            token,
+            message: `Welcome ${user.Username}`,
+            Username: user.Username,
+            userId: user.id
+        });
     } catch (error) {
         console.error('Error logging in user:', error);
         sendResponse(res, 400, { error: 'An error occurred while logging in the user' });
     }
 }
+
 
 export const getUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -123,23 +131,22 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-export const getUserById = async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
+export const getUserById = async (id: number): Promise<{ languagePreference?: string } | null> => {
     try {
         const user = await prisma.user.findUnique({
             where: {
-                id: parseInt(id)
+                id: id
+            },
+            select: {
+                languagePreference: true
             }
         });
-        if (!user) {
-            return sendResponse(res, 404, { error: 'User not found' });
-        }
-        sendResponse(res, 200, user);
+        return user;
     } catch (error) {
         console.error('Error getting user by id:', error);
-        sendResponse(res, 400, { error: 'An error occurred while getting user by id' });
+        throw new Error('An error occurred while getting user by id');
     }
-}
+};
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -197,15 +204,4 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
         sendResponse(res, 400, { error: 'An error occurred while deleting user' });
     }
 }
-
-// export const getLanguages = async (req: Request, res: Response): Promise<void> => {
-//     try {
-//         const languages = await getSupportedLanguages();
-//         res.status(200).json(languages);
-//     } catch (error) {
-//         console.error('Error fetching languages:', error);
-//         res.status(400).json({ error: 'An error occurred while fetching languages' });
-//     }
-// }
-
 export default { registerUser, getUser, getUserById, updateUser, deleteUser };
