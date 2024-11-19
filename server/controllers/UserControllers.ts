@@ -66,7 +66,9 @@ export const registerUser = async (req: Request<{}, {}, UseRecords>, res: Respon
         if (existingUsername) {
             return sendResponse(res, 400, { error: 'Username already exists' });
         }
-
+        if (password.length < 8) {
+            return sendResponse(res, 400, { error: 'Password should be atleast 8 characters' });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {

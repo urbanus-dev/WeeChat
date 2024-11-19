@@ -3,6 +3,7 @@ import { MdOutlineMail } from "react-icons/md";
 import { IoMdEyeOff } from "react-icons/io";
 import { BsPersonSquare } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
+import { CgPassword } from 'react-icons/cg';
 
 const Register: React.FC = () => {
     const navigate = useNavigate();
@@ -51,6 +52,9 @@ const Register: React.FC = () => {
             } else {
                 alert(data.error || "An error occurred");
                 console.error(data.error);
+            }
+            if(formData.password.length < 8) {
+                alert("Password must contain at least 8 characters");
             }
         } catch (error) {
             alert("Failed to connect to the server");

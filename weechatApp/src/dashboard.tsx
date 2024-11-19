@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import { CiSearch } from "react-icons/ci";
 
 interface Message {
     userId: number;
@@ -178,15 +179,19 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="flex min-h-screen">
-            <aside className="w-1/4 bg-gray-200 p-4">
-                <h2 className="text-xl font-semibold mb-4">Friends</h2>
-                <button
-                    onClick={() => navigate('/profile')}
-                    className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition duration-300"
-                >
-                    Profile
-                </button>
-                <ul className="space-y-2">
+            <aside className="w-full tablet:w-1/4 bg-gray-200 p-4 flex flex-col">
+                <div className="sticky top-0 bg-gray-200 z-10">
+                    <h2 className="text-xl font-semibold mb-4">Friends</h2>
+                    <div className='flex relative items-center'>
+                        <CiSearch className='absolute left-3 text-gray-500 text-2xl' />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="p-2 pl-10 border rounded-md w-full"
+                        />
+                    </div>
+                </div>
+                <ul className="space-y-2 flex-grow overflow-y-auto mt-4">
                     {filteredUsers.map((user) => (
                         <li
                             key={user.id}
@@ -202,22 +207,31 @@ const Dashboard: React.FC = () => {
                 </ul>
             </aside>
             <div className="flex-grow flex flex-col">
-                <nav className="flex items-center bg-green-600 w-full h-16 p-4 gap-4">
+                <nav className="flex items-center bg-green-600 w-full h-16 p-4 gap-4 fixed top-0 z-10">
                     <div className="h-10 w-10 bg-blue-950 rounded-full flex items-center justify-center">
                         <span className="text-white text-3xl">{parsedUser.Username[0]}</span>
                     </div>
                     <h2 className="text-white text-xl">{welcomeMessage}</h2>
-                    <button
-                        onClick={() => {
-                            localStorage.removeItem('user');
-                            navigate('/');
-                        }}
-                        className="ml-auto bg-white text-blue-950 py-2 px-4 rounded-md hover:bg-green-600 transition duration-300"
-                    >
-                        Logout
-                    </button>
+                    <div className="flex  ml-96 gap-10">
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('user');
+                                navigate('/');
+                            }}
+                            className="bg-white text-blue-950 py-2 px-4 rounded-md hover:bg-green-700 transition duration-300"
+                        >
+                            Logout
+                        </button>
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="bg-white p-2 rounded-md hover:bg-green-700 transition duration-300"
+                        >
+                            Update Profile
+                        </button>
+                    </div>
+
                 </nav>
-                <main className="flex-grow p-8">
+                <main className="flex-grow p-8 mt-16">
                     {activeUser ? (
                         <>
                             <h2 className="text-2xl font-bold mb-4">Chat with {activeUser.Username}</h2>
@@ -230,11 +244,10 @@ const Dashboard: React.FC = () => {
                                     .map((message) => (
                                         <li
                                             key={message.id}
-                                            className={`p-4 rounded-md shadow-md max-w-xs mb-4 ${
-                                                message.senderId === parsedUser?.userId
-                                                    ? 'bg-gray-400 text-black self-start mr-auto'
-                                                    : 'bg-gray-300 text-black self-end ml-auto'
-                                            }`}
+                                            className={`p-4 rounded-md shadow-md max-w-xs mb-4 ${message.senderId === parsedUser?.userId
+                                                ? 'bg-gray-400 text-black self-start mr-auto'
+                                                : 'bg-gray-300 text-black self-end ml-auto'
+                                                }`}
                                         >
                                             <p>{message.content}</p>
                                             <p className="text-sm text-gray-500">
@@ -243,7 +256,10 @@ const Dashboard: React.FC = () => {
                                         </li>
                                     ))}
                             </ul>
-                            <div className="fixed bottom-0 left-1/4 w-3/4 flex gap-2 bg-white p-4 border-t">
+                            <br />
+                            <br />
+                            <br />
+                            <div className="fixed bottom-0 left-0 w-full tablet:left-1/4 tablet:w-3/4 flex gap-1 bg-white p-4 border-t">
                                 <input
                                     type="text"
                                     value={newMessage}
