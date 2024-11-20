@@ -5,6 +5,7 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "types": ["cypress"],
     "module": "ESNext",
     "forceConsistentCasingInFileNames": true,
     "strict": true
